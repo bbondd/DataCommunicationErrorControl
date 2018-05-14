@@ -6,9 +6,9 @@ import string
 
 class Sender:
     class Constant:
-        timeout = 2
-        frame_size = 0x10
-        frame_transmission_failure_probability = 0.3
+        timeout = 3
+        message_size = 0x4
+        frame_size = message_size + 1
         reconnect_wait_time = 1  # sec
 
     def make_connection(self, ip_address, port_number):
@@ -23,42 +23,63 @@ class Sender:
             time.sleep(self.Constant.reconnect_wait_time)
             return self.make_connection(ip_address, port_number)
 
-        print('connection completed')
         sender.settimeout(self.Constant.timeout)
+        print('connection completed')
 
         return sender
 
     def __init__(self, ip_address, port_number):
         self.sender = self.make_connection(ip_address, port_number)
 
-    def stop_and_wait(self, frame):
-        if random.random() < self.Constant.frame_transmission_failure_probability:
-            print('frame transmission failed')
-        else:
-            self.sender.send(frame)
-            print('frame transmission completed')
+    def stop_and_wait(self, message):
 
-        try:
-            self.sender.recv(self.Constant.frame_size)
+        for i in range():
 
-        except socket.timeout:
-            print('acknowledgement reception failed')
-            print('retransmitting...')
-            return self.stop_and_wait(frame)
+        while index < len(message):
+            sub_message = message[index: index + self.Constant.frame_size - 1]
+            frame = (sub_message + chr())
 
-        print('acknowledgement reception completed')
-        return frame
+            sub_message = message[start_index: start_index + self.Constant.frame_size - 1]
+            frame = (sub_message + chr(acknowledgement)).encode()
 
-    def make_random_frame(self):
-        return ''.join(random.choice(string.ascii_uppercase) for _ in range(self.Constant.frame_size)).encode()
+            print(frame)
+            print('send this frame?(y/n)')
+
+            if input() == 'y':
+                self.sender.send(frame)
+                print('frame transmission completed')
+
+            else:
+                print('frame transmission failed')
+
+            while True:
+                try:
+                    self.sender.recv(self.Constant.frame_size)
+                    print('received acknowledgement')
+                    break
+
+                except socket.timeout:
+                    print('acknowledgement reception failed')
+                    print('retransmitting...')
+                    self.sender.send(frame)
+                    print('frame transmission completed')
+
+            return message + recursive_stop_and_wait(remain_frame_number - 1, not acknowledgement)
+
+        return recursive_stop_and_wait(frame_number, 0)
 
 
 def main():
     ip_address = socket.gethostbyname(socket.gethostname())
     port_number = 8585
-
     sender = Sender(ip_address, port_number)
-    sender.stop_and_wait(sender.make_random_frame())
+
+    print('enter message : ')
+    message = input()
+
+    sender.stop_and_wait(message)
+
+    print('send message : ', message)
 
 
 main()
