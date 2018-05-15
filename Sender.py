@@ -1,14 +1,12 @@
 import socket
 import time
-import random
-import string
 
 
 class Sender:
     class Constant:
         timeout = 3
-        message_size = 0x4
-        frame_size = message_size + 1
+        sub_message_size = 0x4
+        frame_size = 0x5
         reconnect_wait_time = 1  # sec
 
     def make_connection(self, ip_address, port_number):
@@ -31,26 +29,22 @@ class Sender:
     def __init__(self, ip_address, port_number):
         self.sender = self.make_connection(ip_address, port_number)
 
+    def message_to_sub_messages(self, message):
+        sub_messages = [message[i: i + self.Constant.sub_message_size]
+                        for i in range(0, len(message), self.Constant.sub_message_size)]
+
+        return sub_messages
+
     def stop_and_wait(self, message):
+        sub_messages = self.message_to_sub_messages(message)
+        frames = [(sub_messages[i] + chr(i % 2)).encode() for i in range(len(sub_messages))]
 
-        for i in range():
-
-        while index < len(message):
-            sub_message = message[index: index + self.Constant.frame_size - 1]
-            frame = (sub_message + chr())
-
-            sub_message = message[start_index: start_index + self.Constant.frame_size - 1]
-            frame = (sub_message + chr(acknowledgement)).encode()
-
-            print(frame)
-            print('send this frame?(y/n)')
-
-            if input() == 'y':
-                self.sender.send(frame)
-                print('frame transmission completed')
-
+        for frame in frames:
+            if frame[0] == 'x'.encode()[0]:
+                print(frame, ' transmission failed')
             else:
-                print('frame transmission failed')
+                self.sender.send(frame)
+                print(frame, ' transmission completed')
 
             while True:
                 try:
@@ -64,18 +58,21 @@ class Sender:
                     self.sender.send(frame)
                     print('frame transmission completed')
 
-            return message + recursive_stop_and_wait(remain_frame_number - 1, not acknowledgement)
-
-        return recursive_stop_and_wait(frame_number, 0)
-
+    def
 
 def main():
     ip_address = socket.gethostbyname(socket.gethostname())
     port_number = 8585
     sender = Sender(ip_address, port_number)
 
-    print('enter message : ')
-    message = input()
+    while True:
+        print('enter message(sub message size : ', sender.Constant.sub_message_size, ') : ')
+        message = input()
+        print(sender.message_to_sub_messages(message))
+        print('send these messages? messages which start with x will fail transmission once.(y/n)')
+
+        if input() == 'y':
+            break
 
     sender.stop_and_wait(message)
 

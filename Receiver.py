@@ -3,7 +3,8 @@ import socket
 
 class Receiver:
     class Constant:
-        frame_size = 0x100
+        sub_message_size = 0x4
+        frame_size = 0x5
 
     def make_connection(self, ip_address, port_number):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,32 +20,23 @@ class Receiver:
     def __init__(self, ip_address, port_number):
         self.receiver = self.make_connection(ip_address, port_number)
 
-    def stop_and_wait(self, frame_number):
-        def recursive_stop_and_wait(remain_frame_number, acknowledgement):
-            if remain_frame_number == 0:
-                return ''
+    def stop_and_wait(self, successes_and_fails):
+        message = ''
 
+        previous_acknowledgement = 1
+        for i in range(len(successes_and_fails)):
             frame = self.receiver.recv(self.Constant.frame_size)
-            message = frame.decode()[0:-1]
+            if frame[-1] != previous_acknowledgement:
+                message += frame[0:-1].decode()
+                previous_acknowledgement = not previous_acknowledgement
 
-            print('data reception completed')
-            print(message, '\treceived')
-
-            print('send acknowledgement?(y/n)')
-
-            if input() == 'y':
-                self.receiver.send(chr(not acknowledgement).encode())
+            if successes_and_fails[i] == 'o':
+                self.receiver.send('\0'.encode())
                 print('acknowledgement transmission completed')
-
             else:
                 print('acknowledgement transmission failed')
 
-            if frame[-1] == acknowledgement:
-                return message + recursive_stop_and_wait(remain_frame_number - 1, not acknowledgement)
-            else:
-                return recursive_stop_and_wait(remain_frame_number, not acknowledgement)
-
-        return recursive_stop_and_wait(frame_number, 0)
+        return message
 
 
 def main():
@@ -52,8 +44,8 @@ def main():
     port_number = 8585
     receiver = Receiver(ip_address, port_number)
 
-    print('enter frame number : ')
-    message = receiver.stop_and_wait(int(input()))
+    print('enter acknowledgement transmission success or fail (ex : oxoox): ')
+    message = receiver.stop_and_wait(input())
 
     print('received message : ', message)
 
