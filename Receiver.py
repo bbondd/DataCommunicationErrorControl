@@ -76,8 +76,19 @@ def main():
     port_number = 8585
     receiver = Receiver(ip_address, port_number)
 
-    print('enter acknowledgement transmission success or fail (ex : oxoox): ')
+    print('1. stop and wait')
+    print('2. go back n')
+    print('choose method : ')
+    method = int(input())
+
+    print('enter acknowledgement transmission success or fail using o and x (ex : oxoox): ')
+
+    
+
     message = receiver.go_back_n([True if character == 'o' else False for character in input()])
+
+
+
 
     print('received message : ', message)
 
