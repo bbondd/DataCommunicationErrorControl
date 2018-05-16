@@ -5,6 +5,7 @@ class Receiver:
     class Constant:
         sub_message_size = 0x4
         frame_size = 0x5
+        window_size = 4
 
     def make_connection(self, ip_address, port_number):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,18 +21,49 @@ class Receiver:
     def __init__(self, ip_address, port_number):
         self.receiver = self.make_connection(ip_address, port_number)
 
-    def stop_and_wait(self, successes_and_fails):
+    def stop_and_wait(self, do_transmissions):
         message = ''
 
         previous_acknowledgement = 1
-        for i in range(len(successes_and_fails)):
+        for do_transmission in do_transmissions:
             frame = self.receiver.recv(self.Constant.frame_size)
+
+            if len(frame) == 0:
+                return message
+
             if frame[-1] != previous_acknowledgement:
                 message += frame[0:-1].decode()
                 previous_acknowledgement = not previous_acknowledgement
 
-            if successes_and_fails[i] == 'o':
-                self.receiver.send('\0'.encode())
+            if do_transmission:
+                self.receiver.send(chr(0).encode())
+                print('acknowledgement transmission completed')
+            else:
+                print('acknowledgement transmission failed')
+
+        return message
+
+    def go_back_n(self, do_transmissions):
+        message = ''
+
+        next_frame_number = 0
+        for do_transmission in do_transmissions:
+            for _ in range(self.Constant.window_size):
+
+                try:
+                    frame = self.receiver.recv(self.Constant.frame_size)
+                except ConnectionAbortedError:
+                    return message
+
+                if len(frame) == 0:
+                    continue
+
+                if frame[-1] == next_frame_number:
+                    message += frame[0:-1].decode()
+                    next_frame_number += 1
+
+            if do_transmission:
+                self.receiver.send(chr(next_frame_number).encode())
                 print('acknowledgement transmission completed')
             else:
                 print('acknowledgement transmission failed')
@@ -45,7 +77,7 @@ def main():
     receiver = Receiver(ip_address, port_number)
 
     print('enter acknowledgement transmission success or fail (ex : oxoox): ')
-    message = receiver.stop_and_wait(input())
+    message = receiver.go_back_n([True if character == 'o' else False for character in input()])
 
     print('received message : ', message)
 
