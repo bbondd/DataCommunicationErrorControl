@@ -79,18 +79,15 @@ def main():
     print('1. stop and wait')
     print('2. go back n')
     print('choose method : ')
-    method = int(input())
+    method_number = int(input())
 
     print('enter acknowledgement transmission success or fail using o and x (ex : oxoox): ')
 
-    
+    do_transmissions = [True if character == 'o' else False for character in input()]
 
-    message = receiver.go_back_n([True if character == 'o' else False for character in input()])
+    message = {1: receiver.stop_and_wait, 2: receiver.go_back_n}[method_number](do_transmissions)
 
-
-
-
-    print('received message : ', message)
+    print('message :', message)
 
 
 main()

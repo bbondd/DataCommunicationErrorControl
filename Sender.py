@@ -96,6 +96,12 @@ def main():
     port_number = 8585
     sender = Sender(ip_address, port_number)
 
+    print('1. stop and wait')
+    print('2. go back n')
+    print('choose method : ')
+
+    method_number = int(input())
+
     while True:
         print('enter message(sub message size : ', sender.Constant.sub_message_size, ') : ')
         message = input()
@@ -105,7 +111,7 @@ def main():
         if input() == 'y':
             break
 
-    sender.go_back_n(message)
+    {1: sender.stop_and_wait, 2: sender.go_back_n}[method_number](message)
 
     print('sent message : ', message)
 
