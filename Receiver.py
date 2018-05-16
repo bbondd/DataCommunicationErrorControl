@@ -3,8 +3,8 @@ import socket
 
 class Receiver:
     class Constant:
-        sub_message_size = 0x4
-        frame_size = 0x5
+        sub_message_size = 4
+        frame_size = 5
         window_size = 4
 
     def make_connection(self, ip_address, port_number):

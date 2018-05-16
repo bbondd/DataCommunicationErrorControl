@@ -4,7 +4,7 @@ import time
 
 class Sender:
     class Constant:
-        timeout = 3
+        timeout = 3  # sec
         sub_message_size = 4
         frame_size = 5
         reconnect_wait_time = 1  # sec
